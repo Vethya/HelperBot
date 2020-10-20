@@ -1,0 +1,7 @@
+Pyrogram
+PyYAML
+Telethon
+jikanpy
+aiohttp
+requests
+tgcrypto
