@@ -10,12 +10,10 @@ import asyncio
 from pprint import pprint
 import re
 
-gdefamount = {}
 data = {}
 
 @register(events.NewMessage(incoming=True, pattern=r'/u(?:rban)?d(?:ictionary)?(?: (\d+))? (.+)'))
 async def urbandictionary(e):
-    global gdefamount
     defamount = int(e.pattern_match.group(1) or 1)-1
     query = e.pattern_match.group(2)
     aw = await e.reply('Searching...')
@@ -52,13 +50,11 @@ async def urbandictionary(e):
                 ],
             link_preview=False
             )
-    data[(r.chat_id, r.id)] = definitions
-    gdefamount[(r.chat_id, r.id)] = defamount
+    data[(r.chat_id, r.id)] = definitions, defamount, e.sender_id
 
 callback_lock = asyncio.Lock()
 @register(events.CallbackQuery())
 async def ud_buttons(e):
-    global gdefamount
     cdata = e.data.decode()
     if cdata not in ('ud_back', 'ud_page', 'ud_next'):
         return
@@ -66,7 +62,14 @@ async def ud_buttons(e):
         await e.answer(cache_time=3600)
         return
     async with callback_lock:
-        defamount = gdefamount.get((e.chat_id, e.message_id))
+        try:
+            definitions, defamount, sender = data.get((e.chat_id, e.message_id))
+        except TypeError:
+            await e.answer()
+            return
+        if e.sender_id != sender:
+            await e.answer('...no', cache_time=3600)
+            return
         try:
             odefamount = defamount
             if cdata == 'ud_back':
@@ -75,13 +78,11 @@ async def ud_buttons(e):
                 defamount += 1
             if defamount < 0:
                 defamount = 0
-            gdefamount[(e.chat_id, e.message_id)] = defamount
+            data[(e.chat_id, e.message_id)] = definitions, defamount, sender
         except TypeError:
             await e.answer()
-            # await e.reply('Data stored was deleted due to restarting the bot! Please make a new query!')
             return
         if odefamount != defamount:
-            definitions = data.get((e.chat_id, e.message_id))
             try:
                 definition = definitions[defamount]
             except IndexError:
@@ -110,7 +111,6 @@ async def ud_buttons(e):
 
 @register(events.NewMessage(incoming=True, pattern=r'/jisho(?: (\d+))? (.+)'))
 async def jisho_dictionary(e):
-    global gdefamount
     word = e.pattern_match.group(2)
     defamount = int((e.pattern_match.group(1) or 1))-1
     aw = await e.reply('Searching...')
@@ -157,13 +157,11 @@ async def jisho_dictionary(e):
                 ],
             link_preview=False
             )
-    data[(r.chat_id, r.id)] = (word, definitions)
-    gdefamount[(r.chat_id, r.id)] = defamount
+    data[(r.chat_id, r.id)] = (word, definitions, defamount, e.sender_id)
 
 
 @register(events.CallbackQuery())
 async def jisho_buttons(e):
-    global gdefamount
     cdata = e.data.decode()
     if cdata not in ('jisho_back', 'jisho_page', 'jisho_next'):
         return
@@ -171,7 +169,14 @@ async def jisho_buttons(e):
         await e.answer(cache_time=3600)
         return
     async with callback_lock:
-        defamount = gdefamount.get((e.chat_id, e.message_id))
+        try:
+            word, definitions, defamount, sender = data.get((e.chat_id, e.message_id))
+        except TypeError:
+            await e.answer()
+            return
+        if e.sender_id != sender:
+            await e.answer('...no', cache_time=3600)
+            return
         try:
             odefamount = defamount
             if cdata == 'jisho_back':
@@ -180,13 +185,11 @@ async def jisho_buttons(e):
                 defamount += 1
             if defamount < 0:
                 defamount = 0
-            gdefamount[(e.chat_id, e.message_id)] = defamount
+            data[(e.chat_id, e.message_id)] = word, definitions, defamount, sender
         except TypeError:
             await e.answer()
-            # await e.reply('Data stored was deleted due to restarting the bot! Please make a new query!')
             return
         if odefamount != defamount:
-            word, definitions = data.get((e.chat_id, e.message_id))
             try:
                 definition = definitions[defamount]
             except IndexError:
