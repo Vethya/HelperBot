@@ -4,9 +4,11 @@ from telethon import Button
 import time
 import asyncio
 
+data = {}
+
 @register(events.NewMessage(pattern=r'/(?:start|alive)$'))
 async def start(e):
-    await e.client.send_message(
+    r = await e.client.send_message(
             e.chat_id,
             "<b>Yes, I'm alive!</b>\nPython version: <code>3.8.5</code>\nTelethon version: <code>1.10.10</code>",
             reply_to=e.id,
@@ -15,12 +17,26 @@ async def start(e):
                 [Button.url('Pyrogram', url='docs.pyrogram.org'), Button.url('Python', url='python.org'), Button.url('Telethon', url='docs.telethon.dev')],
                 [Button.inline('More', data='alive_more')]
             ])
+    data[(e.chat_id, r.id)] = e.sender_id
 
 morebutton_lock = asyncio.Lock()
 @register(events.CallbackQuery())
 async def more_button(e):
     async with morebutton_lock:
         if e.data == b'alive_more':
+            if e.sender_id not in config['config']['owner_id']:
+                await e.answer('Only sudo or higher can use this button!', alert=True)
+                return
+            if e.sender_id not in config['config']['owner_id']:
+                await e.answer('Only sudo or higher can use this button!', alert=True)
+                return
+            try:
+                if e.sender_id != data[(e.chat_id, e.message_id)]:
+                    await e.answer('...no', cache_time=3600)
+                    return
+            except KeyError:
+                await e.answer()
+                return
             try:
                 await e.answer()
                 owner_names = []
@@ -49,6 +65,13 @@ aliveback_lock = asyncio.Lock()
 async def back_button(e):
     async with aliveback_lock:
         if e.data == b'alive_back':
+            try:
+                if e.sender_id != data[(e.chat_id, e.message_id)]:
+                    await e.answer('...no', cache_time=3600)
+                    return
+            except KeyError:
+                await e.answer()
+                return
             try:
                 await e.answer()
                 await e.client.edit_message(
