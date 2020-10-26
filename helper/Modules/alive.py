@@ -24,9 +24,6 @@ morebutton_lock = asyncio.Lock()
 async def more_button(e):
     async with morebutton_lock:
         if e.data == b'alive_more':
-            if e.sender_id != config['config']['owner_id']:
-                await e.answer('Only sudo or higher can use this button!', alert=True)
-                return
             if e.sender_id not in config['config']['sudo_id']:
                 await e.answer('Only sudo or higher can use this button!', alert=True)
                 return
