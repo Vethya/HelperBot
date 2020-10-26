@@ -24,10 +24,10 @@ morebutton_lock = asyncio.Lock()
 async def more_button(e):
     async with morebutton_lock:
         if e.data == b'alive_more':
-            if e.sender_id not in config['config']['owner_id']:
+            if e.sender_id != config['config']['owner_id']:
                 await e.answer('Only sudo or higher can use this button!', alert=True)
                 return
-            if e.sender_id not in config['config']['owner_id']:
+            if e.sender_id not in config['config']['sudo_id']:
                 await e.answer('Only sudo or higher can use this button!', alert=True)
                 return
             try:
@@ -37,28 +37,17 @@ async def more_button(e):
             except KeyError:
                 await e.answer()
                 return
-            try:
-                await e.answer()
-                owner_names = []
-                sudo_names = []
-                for owner in config['config']['owner_id']:
-                    owner_name = (await e.client.get_entity(owner)).first_name
-                    owner_names.append(owner_name)
-
-                for sudo in config['config']['sudo_id']:
-                    sudo_name = (await e.client.get_entity(sudo)).first_name
-                    sudo_names.append(sudo_name)
-    
-                username = (await e.client.get_me()).username
-                _id = (await e.client.get_me()).id
-                await e.client.edit_message(
+            sudo_names = [(await e.client.get_entity(sudo)).first_name for sudo in config['config']['sudo_id']]
+            owner_name = (await e.client.get_entity(config['config']['owner_id'])).first_name
+            await e.answer()
+            username = (await e.client.get_me()).username
+            _id = (await e.client.get_me()).id
+            await e.client.edit_message(
                     e.chat_id,
                     e.message_id,
-                    f"<b>Helper Bot</b>\n\nMy ID: <code>{_id}</code>\nMy Username: @{username}\nOwners: {', '.join(owner_names)}\nSudos: {', '.join(sudo_names)}\nPython version: <code>3.8.5</code>\nTelethon version: <code>1.10.10</code>",
+                    f"<b>Helper Bot</b>\n\nMy ID: <code>{_id}</code>\nMy Username: @{username}\nOwner: {owner_name}\nSudos: {', '.join(sudo_names)}\nPython version: <code>3.8.5</code>\nTelethon version: <code>1.10.10</code>",
                     buttons=[[Button.inline('Back', data='alive_back')]]
                 )
-            except:
-                pass
 
 aliveback_lock = asyncio.Lock()
 @register(events.CallbackQuery())

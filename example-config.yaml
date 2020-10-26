@@ -3,9 +3,7 @@ telegram:
     api_hash: my.telegram.org
     bot_token: t.me/BotFather
 config:
-    owner_id:
-        - 782144712
-        - 558772678
+    owner_id: 782144712
     sudo_id:
         - 782144712
         - 558772678

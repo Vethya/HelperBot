@@ -6,8 +6,8 @@ import os
 
 @register(events.NewMessage(incoming=True, pattern=r'/exec(?: \n| |\n)([\s\S]+)$'))
 async def execc(e):
-    if e.sender_id not in config['config']['owner_id']:
-        await e.reply('This command can only be used by my OWNERs!')
+    if e.sender_id not in config['config']['sudo_id']:
+        await e.reply('This command can only be used by my SUDOs or higher!')
         return
 
     code = e.pattern_match.group(1)
@@ -31,8 +31,8 @@ async def execc(e):
 
 @register(events.NewMessage(incoming=True, pattern=r'/(?:shell|sh|bash|term) (.+)(?:\n([\s\S]+))?'))
 async def run_shell(e):
-    if e.sender_id not in config['config']['owner_id']:
-        await e.reply('This command can only be used by my OWNERs!')
+    if e.sender_id not in config['config']['sudo_id']:
+        await e.reply('This command can only be used by my SUDOs or higher!')
         return
 
     cmd, stdin = e.pattern_match.group(1), e.pattern_match.group(2)

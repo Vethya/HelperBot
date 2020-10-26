@@ -76,5 +76,4 @@ async def info(e):
     if text_ping != text_unping:
         await r.edit(text_ping, parse_mode='html')
 
-help_dict.update({'Info': '**Commands:**\n- /info <entity> - Get entity info'})
-help_dict.update({"Misc": "**Commands:**\n- /echo <text>: used by SUDO or higher to make the bot say something."})
+help_dict.update({"Misc": "**Commands:**\n- /echo <text>: used by SUDO or higher to make the bot say something.\n- /info <entity> - Get entity info."})
