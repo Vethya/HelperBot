@@ -1,4 +1,5 @@
 config.yaml
 helperbot-pyrogram.session
+helperbot-telethon.session-journal
 helperbot-telethon.session
 helperbot-telethon.session-journal
